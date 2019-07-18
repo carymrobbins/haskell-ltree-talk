@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TupleSections #-}
@@ -62,9 +63,8 @@ pathsToTree = State.evalState go
 
   takeRoot :: State [LTree] LTree
   takeRoot = do
-    (roots, rest) <- State.gets $ partition ((== 1) . LTree.numLabels)
-    case roots of
-      [r] -> State.put rest $> r
+    State.state (partition ((== 1) . LTree.numLabels)) <&> \case
+      [r] -> r
       []  -> error "SQL error: root not found"
       _   -> error "SQL error: multiple roots found"
 
@@ -74,6 +74,5 @@ pathsToTree = State.evalState go
 
   takeChildren :: LTree -> State [LTree] [LTree]
   takeChildren parent = do
-    (children, rest) <- State.gets $ partition (parent `LTree.isImmediateParentOf`)
-    State.put rest
+    children <- State.state $ partition (parent `LTree.isImmediateParentOf`)
     pure children
