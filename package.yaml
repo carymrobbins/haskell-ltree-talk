@@ -8,7 +8,6 @@ copyright:           "2019 Cary Robbins"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 description: Please see the README on GitHub at <https://github.com/carymrobbins/haskell-ltree-talk#readme>
 

@@ -8,7 +8,6 @@ import Data.Functor
 import Data.Traversable
 
 import Control.Monad.State (State)
-import Data.Functor.Identity (runIdentity)
 import Data.List (partition)
 import Data.Text (Text)
 import Data.Tree (Tree)
@@ -56,10 +55,18 @@ fetchPaths c =
     |]
 
 pathsToTree :: [LTree] -> Tree LTree
-pathsToTree = runIdentity . State.evalStateT go
+pathsToTree = State.evalState go
   where
   go :: State [LTree] (Tree LTree)
   go = takeSubtree =<< takeRoot
+
+  takeRoot :: State [LTree] LTree
+  takeRoot = do
+    (roots, rest) <- State.gets $ partition ((== 1) . LTree.numLabels)
+    case roots of
+      [r] -> State.put rest $> r
+      []  -> error "SQL error: root not found"
+      _   -> error "SQL error: multiple roots found"
 
   takeSubtree :: LTree -> State [LTree] (Tree LTree)
   takeSubtree parent = do
@@ -70,11 +77,3 @@ pathsToTree = runIdentity . State.evalStateT go
     (children, rest) <- State.gets $ partition (parent `LTree.isImmediateParentOf`)
     State.put rest
     pure children
-
-  takeRoot :: State [LTree] LTree
-  takeRoot = do
-    (roots, rest) <- State.gets $ partition ((== 1) . LTree.numLabels)
-    case roots of
-      [r] -> State.put rest $> r
-      []  -> error "SQL error: root not found"
-      _   -> error "SQL error: multiple roots found"
