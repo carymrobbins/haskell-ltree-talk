@@ -1,0 +1,36 @@
+name:                haskell-ltree-talk
+version:             0.0.0.0
+github:              "carymrobbins/haskell-ltree-talk"
+license:             BSD3
+author:              "Cary Robbins"
+maintainer:          "carymrobbins@gmail.com"
+copyright:           "2019 Cary Robbins"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+description: Please see the README on GitHub at <https://github.com/carymrobbins/haskell-ltree-talk#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- attoparsec
+- containers
+- mtl
+- postgresql-simple
+- text
+- uuid
+
+library:
+  source-dirs: src
+
+executables:
+  haskell-ltree-talk:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-ltree-talk
