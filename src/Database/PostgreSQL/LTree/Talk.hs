@@ -5,6 +5,7 @@
 module Database.PostgreSQL.LTree.Talk where
 
 import Prelude
+import Control.Monad
 import Data.Functor
 import Data.Traversable
 
@@ -29,7 +30,10 @@ main = do
   putStrLn $ Tree.drawTree $ renderName <$> tree
 
 renderName :: LTree -> String
-renderName path = error "renderName not implemented"
+renderName path =
+  case LTree.toList path of
+    [] -> error "no noes"
+    xs -> Text.unpack $ LTree.unLabel $ last xs
 
 fetchPaths :: PG.Connection -> IO [LTree]
 fetchPaths c =
@@ -53,4 +57,26 @@ fetchPaths c =
     |]
 
 pathsToTree :: [LTree] -> Tree LTree
-pathsToTree = error "pathsToTree not implemented"
+pathsToTree s0 = do
+  let (r, s) = State.runState go s0
+  if (not $ null s) then
+    error $ "State has not been completely consumed! " <> show s
+  else
+    r
+  where
+  go :: State [LTree] (Tree LTree)
+  go = takeSubtree =<< takeRoot
+
+  takeRoot :: State [LTree] LTree
+  takeRoot = do
+    State.state (partition ((== 1) . LTree.numLabels)) <&> \case
+      [r] -> r
+      []  -> error "no roots found"
+      _   -> error "too many roots found"
+
+  takeSubtree :: LTree -> State [LTree] (Tree LTree)
+  takeSubtree = Tree.unfoldTreeM $ \path -> (path,) <$> takeChildren path
+
+  takeChildren :: LTree -> State [LTree] [LTree]
+  takeChildren parent =
+    State.state $ partition (parent `LTree.isImmediateParentOf`)
