@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Database.PostgreSQL.LTree.Talk.Main
+import qualified Database.PostgreSQL.LTree.Talk
 
 main :: IO ()
-main = Database.PostgreSQL.LTree.Talk.Main.main
+main = Database.PostgreSQL.LTree.Talk.main
