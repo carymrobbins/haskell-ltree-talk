@@ -1,5 +1,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Database.PostgreSQL.LTree
   ( LTree(..)
@@ -43,6 +44,12 @@ import qualified Data.UUID as UUID
 -- | Wrapper for Postgres' "ltree" (label tree) type.
 newtype LTree = LTree { unLTree :: Seq Label }
   deriving newtype (Show, Eq)
+
+-- Parse an LTree from a Text, throwing an error on parse failure.
+unsafeMkLTree :: Text -> LTree
+unsafeMkLTree = \case
+  "" -> empty
+  t  -> fromList $ fmap unsafeMkLabel $ Text.splitOn "." t
 
 -- | Wrapper for a single label in an "ltree".
 -- The constructor IS NOT exported to ensure we only construct valid

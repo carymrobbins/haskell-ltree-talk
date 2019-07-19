@@ -29,10 +29,7 @@ main = do
   putStrLn $ Tree.drawTree $ renderName <$> tree
 
 renderName :: LTree -> String
-renderName path =
-  case LTree.toList path of
-    [] -> error "Unexpected empty ltree"
-    xs -> Text.unpack $ LTree.unLabel $ last xs
+renderName path = error "renderName not implemented"
 
 fetchPaths :: PG.Connection -> IO [LTree]
 fetchPaths c =
@@ -56,23 +53,4 @@ fetchPaths c =
     |]
 
 pathsToTree :: [LTree] -> Tree LTree
-pathsToTree = State.evalState go
-  where
-  go :: State [LTree] (Tree LTree)
-  go = takeSubtree =<< takeRoot
-
-  takeRoot :: State [LTree] LTree
-  takeRoot = do
-    State.state (partition ((== 1) . LTree.numLabels)) <&> \case
-      [r] -> r
-      []  -> error "SQL error: root not found"
-      _   -> error "SQL error: multiple roots found"
-
-  takeSubtree :: LTree -> State [LTree] (Tree LTree)
-  takeSubtree parent = do
-    Tree.unfoldTreeM (\path -> (path,) <$> takeChildren path) parent
-
-  takeChildren :: LTree -> State [LTree] [LTree]
-  takeChildren parent = do
-    children <- State.state $ partition (parent `LTree.isImmediateParentOf`)
-    pure children
+pathsToTree = error "pathsToTree not implemented"
